@@ -1,26 +1,27 @@
-Nlyte-Apps/
+FlaskProject/
 │
-│   app.py
-│   Repository Structure.txt
-│   requirements.txt
-│           
-├───apps
-│   │   __init__.py
-│   │   
-│   ├───qr_code_generator
-│   │   │   routes.py
-│   │   │   __init__.py
-│   │   │   
-│   │   ├───templates
-│   │   │   └───qr_code_generator
-│   │   │           index.html
-│   │   │           _code_snippet.html
-│           
-├───static
-│       custom.css
-│       
-├───templates
-│       base.html
-│       header.html
-│       index.html
-│       sidebar.html
+├── app.py          <-- Main entry point of the Flask app
+├── requirements.txt
+├── Repository Structure.txt
+│
+├── apps/           <-- App package (contains blueprints)
+│   ├── __init__.py
+│   │
+│   └── qr_code_generator/   <-- QR code module (blueprint)
+│       ├── __init__.py      <-- Initializes blueprint
+│       ├── routes.py        <-- Blueprint routes
+│       ├── templates/
+│       │   └── qr_code_generator/
+│       │       └── index.html
+│       └── __pycache__/
+│
+├── static/
+│   └── custom.css           <-- Global CSS
+│
+├── templates/               <-- Global templates
+│   ├── base.html            <-- Base layout
+│   ├── header.html          <-- Partial template
+│   ├── sidebar.html         <-- Partial template
+│   └── index.html           <-- Main landing page
+│
+└── __pycache__/
