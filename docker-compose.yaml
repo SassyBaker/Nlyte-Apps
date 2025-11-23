@@ -5,11 +5,12 @@ services:
     build: .
     container_name: nlyte_app
     ports:
-      - "5000"  # expose container port only; Docker will pick a free host port
+      - "5000"  # expose container port; Docker assigns free host port
     environment:
       - PORT=5000
+      - FLASK_ENV=development  # change to production for Coolify / prod
     volumes:
-      - .:/app
+      - .:/app  # mount code for live reload in dev
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
