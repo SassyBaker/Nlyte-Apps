@@ -1,0 +1,11 @@
+[phases.setup]
+commands = ["python -m venv .venv", "source .venv/bin/activate"]
+
+[phases.install]
+commands = ["pip install -r requirements.txt"]
+
+[phases.build]
+commands = []
+
+[phases.start]
+commands = ["python app.py"]
