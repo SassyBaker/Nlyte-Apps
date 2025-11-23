@@ -1,34 +1,38 @@
 <span id="breadcrumb-current" hx-swap-oob="true">QR Code Generator</span>
 
 <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
-    <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3">QR Code Generator</h1>
+    <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+        QR Code Generator
+    </h1>
 
     <!-- Code display -->
-    <div id="code" class="text-3xl font-mono bg-white dark:bg-gray-800 p-4 rounded shadow mb-4 min-w-[12rem] text-center">
+    <div id="code"
+         class="text-3xl font-mono bg-white dark:bg-gray-800 p-4 rounded shadow
+                mb-4 min-w-[12rem] text-center">
         Click "Generate New Code" to create a QR code.
     </div>
 
     <!-- Buttons -->
     <div class="flex flex-wrap justify-center gap-4 mb-4">
-        <button id="copyBtn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+        <button id="copyBtn"
+                class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
             Copy to Clipboard
         </button>
-        <button
-            id="generateBtn"
-            class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-            hx-post="/apps/qr_code_generator/generate"
-            hx-target="#code"
-            hx-swap="outerHTML"
-        >
+
+        <button id="generateBtn"
+                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                hx-post="/apps/qr_code_generator/generate"
+                hx-target="#code"
+                hx-swap="innerHTML">
             Generate New Code
         </button>
     </div>
 
     <!-- Confirmation Message -->
-    <div id="confirmation" class="text-green-600 font-semibold mb-4 h-6 text-center"></div>
+    <div id="confirmation"
+         class="text-green-600 font-semibold mb-4 h-6 text-center">
+    </div>
 </div>
-
-
 
 <!-- JS for copy, dark mode, loading state -->
 <script>
@@ -36,7 +40,9 @@
     const html = document.documentElement;
     const toggleBtn = document.getElementById('toggleDark');
     if (toggleBtn) {
-        if (localStorage.getItem('theme') === 'dark') html.classList.add('dark');
+        if (localStorage.getItem('theme') === 'dark')
+            html.classList.add('dark');
+
         toggleBtn.addEventListener('click', () => {
             const isDark = html.classList.toggle('dark');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
@@ -52,9 +58,11 @@
         let text = codeElement.textContent;
 
         // Prevent copying placeholders
-        if (!text || text === 'Loading...' || text === 'Error' || text.includes('Click "Generate')) return;
+        if (!text ||
+            text === 'Error' ||
+            text.includes('Click "Generate')) return;
 
-        // Clean text: remove extra spaces and newlines
+        // Clean text
         text = text.replace(/\s+/g, '').trim();
 
         navigator.clipboard.writeText(text).then(() => {
@@ -66,14 +74,7 @@
     // Manual copy button
     copyBtn.addEventListener('click', () => copyCode());
 
-    // --- Loading state before HTMX request ---
-    const generateBtn = document.getElementById('generateBtn');
-    generateBtn.addEventListener('click', () => {
-        const codeElement = document.getElementById('code');
-        codeElement.textContent = 'Loading...';
-    });
-
-    // Automatically copy after generating new code via HTMX
+    // Automatically copy after generating via HTMX
     document.body.addEventListener('htmx:afterSwap', (event) => {
         if (event.target.id === 'code') {
             copyCode('New code generated & copied!');
