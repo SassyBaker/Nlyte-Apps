@@ -1,70 +1,85 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Nlyte Apps{% endblock %}</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>😎</text></svg>">
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Flowbite -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.7.0/flowbite.min.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.7.0/flowbite.min.js"></script>
-    <!-- HTMX -->
-    <script src="https://unpkg.com/htmx.org@1.9.4"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Nlyte Apps{% endblock %}</title>
 
-    <script>
-        function toggleDarkMode() {
-            document.documentElement.classList.toggle('dark');
+  <link
+    rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>😎</text></svg>"
+  >
+
+  <!-- Early theme initialization to avoid flash -->
+  <script>
+    (function () {
+      try {
+        const stored = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const html = document.documentElement;
+
+        if (stored === 'dark' || (!stored && prefersDark)) {
+          html.classList.add('dark');
+        } else {
+          html.classList.remove('dark');
         }
-    </script>
+      } catch (_) {
+        // If localStorage fails, fall back to system preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add('dark');
+        }
+      }
+    })();
+  </script>
+
+  <!-- Tailwind CDN config must be defined before tailwindcss CDN script -->
+  <script>
+    // Tailwind CDN config
+    // See: https://tailwindcss.com/docs/dark-mode#toggling-dark-mode-manually
+    tailwind.config = {
+      darkMode: 'class'
+      // You can extend theme here if needed:
+      // theme: { extend: { colors: { brand: '#...' } } }
+    };
+  </script>
+
+  <!-- Tailwind CSS (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Flowbite -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.7.0/flowbite.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.7.0/flowbite.min.js"></script>
+
+  <!-- HTMX -->
+  <script src="https://unpkg.com/htmx.org@1.9.4"></script>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 
-    {% include 'header.html' %}
+  {% include 'header.html' %}
 
-    <div class="flex">
-        {% include 'sidebar.html' %}
+  <div class="flex">
+    {% include 'sidebar.html' %}
 
-        <!-- Main content -->
-        <main id="main-content" class="flex-1 p-6">
-            {% block content %}{% endblock %}
-        </main>
-    </div>
+    <!-- Main content -->
+    <main id="main-content" class="flex-1 p-6">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
 
+  <!-- Theme toggle logic: single definition -->
+  <script>
+    function toggleDarkMode() {
+      const html = document.documentElement;
+      const nextIsDark = !html.classList.contains('dark');
+      html.classList.toggle('dark', nextIsDark);
+      localStorage.setItem('theme', nextIsDark ? 'dark' : 'light');
+
+      // Optional: update any aria states for accessible toggle buttons
+      const toggles = document.querySelectorAll('[data-theme-toggle]');
+      toggles.forEach(btn => {
+        btn.setAttribute('aria-pressed', String(nextIsDark));
+      });
+    }
+  </script>
 </body>
 </html>
-
-<script>
-    // Enable dark mode via class
-    tailwind.config = {
-      darkMode: 'class'
-    }
-
-    // Initialize based on saved preference
-    if (localStorage.theme === 'dark') {
-        document.documentElement.classList.add('dark');
-    } else if (localStorage.theme === 'light') {
-        document.documentElement.classList.remove('dark');
-    } else {
-        // default to system preference
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.documentElement.classList.add('dark');
-        }
-    }
-
-    function toggleDarkMode() {
-        const html = document.documentElement;
-        if (html.classList.contains('dark')) {
-            html.classList.remove('dark');
-            localStorage.theme = 'light';
-        } else {
-            html.classList.add('dark');
-            localStorage.theme = 'dark';
-        }
-    }
-</script>
-
-
-
