@@ -1,3 +1,5 @@
 flask[async]
 requests
 python-dotenv
+pandas
+openpyxl

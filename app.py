@@ -2,6 +2,7 @@ import os
 
 from flask import Flask, render_template, jsonify
 from apps.qr_code_generator import qr_code_generator_bp
+from apps.excel_joiner import excel_joiner_bp
 
 app = Flask(__name__)
 
@@ -9,6 +10,7 @@ SITE_TITLE = "Nlyte Companion Apps"
 
 # Register blueprints
 app.register_blueprint(qr_code_generator_bp, url_prefix="/apps/qr_code_generator")
+app.register_blueprint(excel_joiner_bp, url_prefix="/apps/excel_joiner")
 
 @app.route("/")
 def index():

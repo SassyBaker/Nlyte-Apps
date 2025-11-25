@@ -1,0 +1,202 @@
+<span id="breadcrumb-current" hx-swap-oob="true">QR Code Generator</span>
+
+<div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
+    <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+        QR Code Generator
+    </h1>
+
+    <!-- Single Code Display -->
+    <div id="code"
+         class="text-3xl font-mono bg-white dark:bg-gray-800 p-4 rounded shadow
+                mb-4 min-w-[12rem] text-center">
+        Click "Generate New Code" to create a QR code.
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex flex-wrap justify-center gap-4 mb-4">
+        <button id="copyBtn"
+                class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+            Copy to Clipboard
+        </button>
+
+        <button id="generateBtn"
+                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                hx-post="/apps/qr_code_generator/generate"
+                hx-target="#code"
+                hx-swap="innerHTML">
+            Generate New Code
+        </button>
+    </div>
+
+    <!-- Confirmation Message -->
+    <div id="confirmation"
+         class="text-green-600 font-semibold mb-4 h-6 text-center">
+    </div>
+
+    <!-- =============================== -->
+    <!--    ADVANCED OPTIONS SECTION     -->
+    <!-- =============================== -->
+
+    <!-- Toggle Button with Icon -->
+    <button id="toggle-advanced"
+            class="mt-6 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full flex items-center justify-center gap-2">
+        <span id="toggle-text">Show Advanced Options</span>
+        <svg id="toggle-icon" class="w-5 h-5 transition-transform duration-500 ease-in-out"
+             fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </button>
+
+    <!-- Advanced Panel (Hidden Initially + Animated) -->
+    <div id="advanced-panel"
+         class="overflow-hidden max-h-0 opacity-0 transition-all duration-500 ease-in-out
+                mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded shadow">
+
+        <h2 class="font-semibold text-gray-800 dark:text-gray-200 mb-2">
+            Advanced Options
+        </h2>
+
+        <form hx-post="/apps/qr_code_generator/generate-batch"
+              hx-target="#advanced-code-table"
+              hx-swap="innerHTML"
+              class="flex flex-wrap gap-4 items-end">
+
+            <div>
+                <label class="block text-sm font-medium mb-1">Number of Codes</label>
+                <input type="number" name="count" min="1" max="500"
+                       class="border rounded p-2 w-28 dark:bg-gray-800 dark:text-white">
+            </div>
+
+            <button class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
+                Generate Table
+            </button>
+        </form>
+
+        <!-- Table output inside advanced panel -->
+        <div id="advanced-code-table" class="mt-4"></div>
+    </div>
+</div>
+
+<script>
+// ==========================
+// QR Code Generator JS
+// ==========================
+
+// --- Dark Mode Toggle ---
+const html = document.documentElement;
+const toggleBtn = document.getElementById('toggleDark');
+if (toggleBtn) {
+    if (localStorage.getItem('theme') === 'dark') html.classList.add('dark');
+
+    toggleBtn.addEventListener('click', () => {
+        const isDark = html.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+}
+
+// --- Confirmation Message Utility ---
+const confirmation = document.getElementById('confirmation');
+
+function showConfirmation(message) {
+    confirmation.textContent = message;
+    confirmation.classList.remove('opacity-0');
+    confirmation.classList.add('opacity-100');
+
+    setTimeout(() => {
+        confirmation.classList.remove('opacity-100');
+        confirmation.classList.add('opacity-0');
+        confirmation.textContent = '';
+    }, 3000);
+}
+
+// --- Single Code Copy ---
+const copyBtn = document.getElementById('copyBtn');
+
+function copyCode(message = 'Code copied!') {
+    const codeElement = document.getElementById('code');
+    let text = codeElement.textContent;
+
+    if (!text || text.includes('Click "Generate')) return;
+
+    text = text.replace(/\s+/g, '').trim();
+
+    navigator.clipboard.writeText(text).then(() => {
+        showConfirmation(message);
+    });
+}
+
+copyBtn.addEventListener('click', () => copyCode());
+
+document.body.addEventListener('htmx:afterSwap', event => {
+    if (event.target.id === 'code') {
+        copyCode('New code generated & copied!');
+    }
+});
+
+// --- Batch Table Copy (Codes Only) ---
+function copyTable() {
+    const rows = [...document.querySelectorAll("#advanced-code-table table tbody tr")];
+    if (!rows.length) return;
+
+    const text = rows
+        .map(row => row.querySelectorAll("td")[1].innerText.trim())
+        .join("\n");
+
+    navigator.clipboard.writeText(text).then(() => {
+        showConfirmation("Codes copied!");
+    });
+}
+window.copyTable = copyTable;
+
+// --- Advanced Panel Toggle + Icon Rotation ---
+const toggleAdvanced = document.getElementById('toggle-advanced');
+const advancedPanel = document.getElementById('advanced-panel');
+const toggleIcon = document.getElementById('toggle-icon');
+const toggleText = document.getElementById('toggle-text');
+
+toggleAdvanced.addEventListener('click', () => {
+    const isOpen = advancedPanel.classList.contains("open");
+
+    if (isOpen) {
+        // CLOSE
+        advancedPanel.style.maxHeight = advancedPanel.scrollHeight + "px";
+        advancedPanel.style.opacity = "1";
+
+        requestAnimationFrame(() => {
+            advancedPanel.style.maxHeight = "0";
+            advancedPanel.style.opacity = "0";
+            toggleIcon.style.transform = "rotate(0deg)";
+        });
+
+        toggleText.textContent = "Show Advanced Options";
+        advancedPanel.classList.remove("open");
+    } else {
+        // OPEN
+        advancedPanel.style.maxHeight = advancedPanel.scrollHeight + "px";
+        advancedPanel.style.opacity = "1";
+        toggleIcon.style.transform = "rotate(180deg)";
+        toggleText.textContent = "Hide Advanced Options";
+        advancedPanel.classList.add("open");
+    }
+});
+
+// --- Auto-expand Advanced Panel when Batch Table Generated ---
+document.body.addEventListener('htmx:afterSwap', event => {
+    if (event.target.id === 'advanced-code-table') {
+        // Force panel to fit new content
+        advancedPanel.style.maxHeight = "0";
+        advancedPanel.style.opacity = "0";
+
+        requestAnimationFrame(() => {
+            advancedPanel.style.maxHeight = advancedPanel.scrollHeight + "px";
+            advancedPanel.style.opacity = "1";
+            toggleIcon.style.transform = "rotate(180deg)";
+            toggleText.textContent = "Hide Advanced Options";
+        });
+
+        advancedPanel.classList.add("open");
+    }
+});
+
+</script>
