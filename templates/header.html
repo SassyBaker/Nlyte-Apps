@@ -13,3 +13,19 @@
         </button>
     </div>
 </header>
+
+<script>
+    // --- Dark Mode Toggle ---
+    const html = document.documentElement; // <html> element
+    const toggleBtn = document.getElementById('dark-toggle');
+
+    // Initialize theme from localStorage
+    if (localStorage.getItem('theme') === 'dark') {
+        html.classList.add('dark');
+    }
+
+    toggleBtn.addEventListener('click', () => {
+        const isDark = html.classList.toggle('dark'); // toggle class
+        localStorage.setItem('theme', isDark ? 'dark' : 'light'); // save preference
+    });
+</script>
