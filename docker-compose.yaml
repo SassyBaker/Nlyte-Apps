@@ -2,6 +2,7 @@ version: "3.9"
 
 services:
   web:
+    pull_policy: always
     build: .
     container_name: nlyte_app
     ports:
