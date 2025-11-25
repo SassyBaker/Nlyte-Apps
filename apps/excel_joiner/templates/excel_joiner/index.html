@@ -1,18 +1,182 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Excel Joiner</title>
-</head>
-<body>
-    <h2>Upload Excel or CSV Files</h2>
+<span id="breadcrumb-current" hx-swap-oob="true">Excel Joiner</span>
 
+<div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
+    <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+        Excel / CSV Joiner
+    </h1>
+
+    <!-- =============================== -->
+    <!--   MAIN DRAG & DROP UPLOAD BOX  -->
+    <!-- =============================== -->
     <form action="{{ url_for('excel_joiner_bp.combine_files') }}"
           method="POST"
           enctype="multipart/form-data">
 
-        <input type="file" name="files" multiple required>
-        <br><br>
-        <button type="submit">Combine Files</button>
+        <label for="file-upload"
+               class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed
+                      border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700
+                      hover:bg-gray-100 dark:hover:bg-gray-600 transition mb-4">
+
+            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <svg class="w-10 h-10 mb-3 text-gray-500 dark:text-gray-300"
+                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M7 16V4m0 0l-4 4m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/>
+                </svg>
+
+                <p class="mb-2 text-sm text-gray-500 dark:text-gray-300">
+                    <span class="font-semibold">Click to upload</span> or drag & drop
+                </p>
+                <p class="text-xs text-gray-400 dark:text-gray-300">
+                    Excel or CSV files (multiple allowed)
+                </p>
+            </div>
+
+            <input id="file-upload"
+                   type="file"
+                   name="files"
+                   multiple
+                   class="hidden"
+                   required>
+        </label>
+
+        <!-- File List -->
+        <div id="file-list"
+             class="mt-2 text-sm text-gray-700 dark:text-gray-200 space-y-1 mb-4"></div>
+
+        <!-- Buttons -->
+        <div class="flex flex-wrap justify-center gap-4 mb-4">
+
+            <!-- Prettier (reset) -->
+            <button id="reset-btn"
+                    type="button"
+                    class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                Prettier
+            </button>
+
+            <!-- Combine -->
+            <button type="submit"
+                    class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                Combine Files
+            </button>
+        </div>
+
     </form>
-</body>
-</html>
+
+    <!-- Confirmation Message -->
+    <div id="confirmation"
+         class="text-green-600 font-semibold mb-4 h-6 text-center opacity-0 transition">
+    </div>
+
+    <!-- =============================== -->
+    <!--    ADVANCED OPTIONS SECTION     -->
+    <!-- =============================== -->
+
+    <button id="toggle-advanced"
+            class="mt-6 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded
+                   w-full flex items-center justify-center gap-2">
+        <span id="toggle-text">Show Advanced Options</span>
+        <svg id="toggle-icon" class="w-5 h-5 transition-transform duration-500 ease-in-out"
+             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 9l-7 7-7-7"/>
+        </svg>
+    </button>
+
+    <div id="advanced-panel"
+         class="overflow-hidden max-h-0 opacity-0 transition-all duration-500 ease-in-out
+                mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded shadow">
+
+        <h2 class="font-semibold text-gray-800 dark:text-gray-200 mb-2">
+            Advanced Options
+        </h2>
+
+        <p class="text-gray-700 dark:text-gray-300 mb-4 text-sm">
+            (You can extend this section later with column-matching, join types,
+            ignoring headers, file rules, etc.)
+        </p>
+
+        <div id="advanced-content" class="text-gray-600 dark:text-gray-200">
+            No advanced options available yet.
+        </div>
+    </div>
+</div>
+
+<!-- Flowbite -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+
+<script>
+// ---------------------------------------------------------
+// File List Display
+// ---------------------------------------------------------
+const input = document.getElementById("file-upload");
+const fileList = document.getElementById("file-list");
+
+input.addEventListener("change", () => {
+    fileList.innerHTML = "";
+    [...input.files].forEach(file => {
+        const p = document.createElement("p");
+        p.textContent = "📄 " + file.name;
+        fileList.appendChild(p);
+    });
+});
+
+// ---------------------------------------------------------
+// Prettier Reset Button
+// ---------------------------------------------------------
+document.getElementById("reset-btn").addEventListener("click", () => {
+    input.value = "";
+    fileList.innerHTML = "";
+    showConfirmation("Files cleared.");
+});
+
+// ---------------------------------------------------------
+// Confirmation Message Utility
+// ---------------------------------------------------------
+const confirmation = document.getElementById("confirmation");
+
+function showConfirmation(msg) {
+    confirmation.textContent = msg;
+    confirmation.classList.add("opacity-100");
+    confirmation.classList.remove("opacity-0");
+
+    setTimeout(() => {
+        confirmation.classList.remove("opacity-100");
+        confirmation.classList.add("opacity-0");
+    }, 2500);
+}
+
+// ---------------------------------------------------------
+// Advanced Panel Toggle (same behavior as QR example)
+// ---------------------------------------------------------
+const toggleAdvanced = document.getElementById("toggle-advanced");
+const advancedPanel = document.getElementById("advanced-panel");
+const toggleIcon = document.getElementById("toggle-icon");
+const toggleText = document.getElementById("toggle-text");
+
+toggleAdvanced.addEventListener("click", () => {
+    const isOpen = advancedPanel.classList.contains("open");
+
+    if (isOpen) {
+        // close
+        advancedPanel.style.maxHeight = advancedPanel.scrollHeight + "px";
+        advancedPanel.style.opacity = "1";
+
+        requestAnimationFrame(() => {
+            advancedPanel.style.maxHeight = "0";
+            advancedPanel.style.opacity = "0";
+            toggleIcon.style.transform = "rotate(0deg)";
+        });
+
+        toggleText.textContent = "Show Advanced Options";
+        advancedPanel.classList.remove("open");
+    } else {
+        // open
+        advancedPanel.style.maxHeight = advancedPanel.scrollHeight + "px";
+        advancedPanel.style.opacity = "1";
+        toggleIcon.style.transform = "rotate(180deg)";
+        toggleText.textContent = "Hide Advanced Options";
+        advancedPanel.classList.add("open");
+    }
+});
+</script>
